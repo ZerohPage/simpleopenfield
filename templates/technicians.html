@@ -5,12 +5,55 @@
         </div>
         <div class="level-right">
             <div class="buttons">
+                <button class="button is-light" onclick="exportTechnicians()">
+                    <span class="icon">
+                        <i class="fas fa-download"></i>
+                    </span>
+                    <span>Export</span>
+                </button>
                 <button class="button is-primary" onclick="openModal('newTechnicianModal')">
                     <span class="icon">
                         <i class="fas fa-plus"></i>
                     </span>
                     <span>New Technician</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns mb-4">
+        <div class="column is-half">
+            <div class="field">
+                <label class="label" for="technician-search">Search:</label>
+                <div class="control has-icons-left">
+                    <input class="input" type="text" id="technician-search" placeholder="Search technicians..." oninput="searchTechnicians()">
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="column is-one-quarter">
+            <div class="field">
+                <label class="label" for="status-filter">Filter by Status:</label>
+                <div class="control">
+                    <div class="select is-fullwidth">
+                        <select id="status-filter" onchange="filterTechnicians()">
+                            <option value="">All Statuses</option>
+                            <option value="available">Available</option>
+                            <option value="busy">Busy</option>
+                            <option value="off-duty">Off Duty</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column is-one-quarter">
+            <div class="field">
+                <label class="label" for="skills-filter">Filter by Skills:</label>
+                <div class="control">
+                    <input class="input" type="text" id="skills-filter" placeholder="e.g., HVAC, Electrical" onchange="filterTechnicians()">
+                </div>
             </div>
         </div>
     </div>

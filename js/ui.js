@@ -68,7 +68,7 @@ class UIManager {
         this.modals.set(modalId, {
             previousFocus: document.activeElement,
             options: options
-        });        modal.classList.add('is-active');
+        }); modal.classList.add('is-active');
         modal.setAttribute('aria-hidden', 'false');
 
         // Focus first input or button
@@ -90,12 +90,12 @@ class UIManager {
         const modal = document.getElementById(modalId);
         if (!modal) return false;
 
-        const modalData = this.modals.get(modalId);        modal.classList.remove('is-active');
+        const modalData = this.modals.get(modalId); modal.classList.remove('is-active');
         modal.setAttribute('aria-hidden', 'true');
 
         setTimeout(() => {
             modal.style.display = 'none';
-            
+
             // Restore focus
             if (modalData && modalData.previousFocus) {
                 modalData.previousFocus.focus();
@@ -107,10 +107,10 @@ class UIManager {
 
         this.modals.delete(modalId);
         return true;
-    }    closeTopModal() {
+    } closeTopModal() {
         const visibleModals = Array.from(this.modals.keys())
             .filter(id => document.getElementById(id).classList.contains('is-active'));
-        
+
         if (visibleModals.length > 0) {
             this.hideModal(visibleModals[visibleModals.length - 1]);
         }
@@ -122,14 +122,14 @@ class UIManager {
         if (!dropdown) return false;
 
         const isOpen = dropdown.classList.contains('is-active');
-        
+
         // Close all other dropdowns
         this.closeAllDropdowns();
 
         if (!isOpen) {
             dropdown.classList.add('is-active');
             dropdown.setAttribute('aria-expanded', 'true');
-            
+
             this.dropdowns.set(dropdownId, {
                 trigger: document.querySelector(`[data-dropdown="${dropdownId}"]`)
             });
@@ -155,20 +155,20 @@ class UIManager {
         document.querySelectorAll('.dropdown').forEach(dropdown => {
             const trigger = dropdown.querySelector('.dropdown-trigger button');
             const menu = dropdown.querySelector('.dropdown-menu');
-            
+
             if (trigger && menu) {
                 trigger.addEventListener('click', (e) => {
                     e.preventDefault();
                     dropdown.classList.toggle('is-active');
                 });
-                
+
                 // Close dropdown when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!dropdown.contains(e.target)) {
                         dropdown.classList.remove('is-active');
                     }
                 });
-                
+
                 // Close dropdown when pressing escape
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
@@ -202,11 +202,16 @@ class UIManager {
         return notification.id;
     }
 
+    // Alias for showNotification for backward compatibility
+    showToast(message, type = 'info', duration = 3000, actions = []) {
+        return this.showNotification(message, type, duration, actions);
+    }
+
     hideNotification(notificationId) {
         const index = this.notifications.findIndex(n => n.id === notificationId);
         if (index !== -1) {
             this.notifications.splice(index, 1);
-            
+
             const element = document.querySelector(`[data-notification-id="${notificationId}"]`);
             if (element) {
                 element.classList.add('removing');
@@ -217,13 +222,13 @@ class UIManager {
 
     renderNotification(notification) {
         const container = document.getElementById('toast-container') || this.createNotificationContainer();
-          const notificationElement = document.createElement('div');
+        const notificationElement = document.createElement('div');
         notificationElement.className = `notification ${notification.type === 'success' ? 'is-success' : notification.type === 'error' ? 'is-danger' : notification.type === 'warning' ? 'is-warning' : 'is-info'} mb-3`;
         notificationElement.setAttribute('data-notification-id', notification.id);
         notificationElement.setAttribute('role', 'alert');
         notificationElement.setAttribute('aria-live', 'polite');
 
-        const actionsHTML = notification.actions.map(action => 
+        const actionsHTML = notification.actions.map(action =>
             `<button class="button is-small ml-2" onclick="${action.handler}">${action.label}</button>`
         ).join('');
 
@@ -233,8 +238,8 @@ class UIManager {
                 ${notification.message}
                 ${actionsHTML ? `<div class="mt-2">${actionsHTML}</div>` : ''}
             </div>
-        `;        container.appendChild(notificationElement);
-    }    createNotificationContainer() {
+        `; container.appendChild(notificationElement);
+    } createNotificationContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
         container.className = 'is-fixed';
@@ -264,7 +269,7 @@ class UIManager {
 
     getValidationRules(field) {
         const rules = [];
-        
+
         // Required validation
         if (field.hasAttribute('required')) {
             rules.push({ type: 'required' });
@@ -309,21 +314,21 @@ class UIManager {
                     valid: value.length > 0,
                     message: 'This field is required'
                 };
-            
+
             case 'email':
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return {
                     valid: !value || emailRegex.test(value),
                     message: 'Please enter a valid email address'
                 };
-            
+
             case 'phone':
                 const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
                 return {
                     valid: !value || phoneRegex.test(value),
                     message: 'Please enter a valid phone number'
                 };
-            
+
             case 'url':
                 try {
                     new URL(value);
@@ -334,7 +339,7 @@ class UIManager {
                         message: 'Please enter a valid URL'
                     };
                 }
-            
+
             case 'min':
                 const minValue = parseFloat(rule.value);
                 const numValue = parseFloat(value);
@@ -342,7 +347,7 @@ class UIManager {
                     valid: !value || numValue >= minValue,
                     message: `Value must be at least ${minValue}`
                 };
-            
+
             case 'max':
                 const maxValue = parseFloat(rule.value);
                 const numVal = parseFloat(value);
@@ -350,7 +355,7 @@ class UIManager {
                     valid: !value || numVal <= maxValue,
                     message: `Value must be no more than ${maxValue}`
                 };
-            
+
             default:
                 return { valid: true };
         }
@@ -367,12 +372,12 @@ class UIManager {
 
         if (errors.length > 0) {
             field.classList.add('error');
-            
+
             const errorElement = document.createElement('div');
             errorElement.className = 'field-error';
             errorElement.textContent = errors[0]; // Show first error
             errorElement.setAttribute('role', 'alert');
-            
+
             field.parentNode.appendChild(errorElement);
         } else if (field.value.trim()) {
             field.classList.add('valid');
@@ -415,7 +420,7 @@ class UIManager {
 
     resetForm(form) {
         form.reset();
-        
+
         // Clear validation states
         form.querySelectorAll('.error, .valid').forEach(field => {
             field.classList.remove('error', 'valid');
@@ -581,7 +586,7 @@ class UIManager {
         tabContainer.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        
+
         const targetContent = tabContainer.querySelector(`[data-tab-content="${tabId}"]`);
         if (targetContent) {
             targetContent.classList.add('active');
@@ -681,7 +686,7 @@ class UIManager {
 
     throttle(func, limit) {
         let inThrottle;
-        return function() {
+        return function () {
             const args = arguments;
             const context = this;
             if (!inThrottle) {

@@ -304,40 +304,16 @@ class PageManager {
 // Create global instance
 window.pageManager = new PageManager();
 
-/**
- * Enhanced modal management with template loading
- */
-const ModalManager = {
-    /**
-     * Open a modal by loading its template if needed
-     */
-    async openModal(modalId) {
-        const modal = await pageManager.loadModal(modalId);
-        if (modal) {
-            modal.classList.add('is-active');
-            document.body.classList.add('is-clipped');
-            
-            // Focus management for accessibility
-            const firstInput = modal.querySelector('input, select, textarea, button');
-            if (firstInput) {
-                firstInput.focus();
-            }
-        }
-    },
-
-    /**
-     * Close a modal
-     */
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('is-active');
-            document.body.classList.remove('is-clipped');
-        }
+// Modal functions are now handled by the ModalManager class in modals.js
+// These global functions are maintained for backward compatibility
+window.openModal = async (modalId) => {
+    if (window.modalManager) {
+        await window.modalManager.openModal(modalId);
     }
 };
 
-// Make modal functions globally available
-window.ModalManager = ModalManager;
-window.openModal = ModalManager.openModal;
-window.closeModal = ModalManager.closeModal;
+window.closeModal = (modalId) => {
+    if (window.modalManager) {
+        window.modalManager.closeModal(modalId);
+    }
+};
