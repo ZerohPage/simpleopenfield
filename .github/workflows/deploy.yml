@@ -76,13 +76,11 @@ jobs:
         run: |
           echo "Build directory contents:"
           find build -type f -name "*.html" -o -name "*.css" -o -name "*.js" | sort
-          
-          # Verify required files exist
+            # Verify required files exist
           required_files=(
             "build/index.html"
-            "build/styles/main.css"
-            "build/styles/components.css"
-            "build/styles/responsive.css"
+            "build/styles/bulma.min.css"
+            "build/styles/bulma-extensions.css"
             "build/js/app.js"
             "build/js/data.js"
             "build/js/ui.js"

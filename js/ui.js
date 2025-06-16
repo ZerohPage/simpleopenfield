@@ -68,10 +68,7 @@ class UIManager {
         this.modals.set(modalId, {
             previousFocus: document.activeElement,
             options: options
-        });
-
-        modal.classList.add('show');
-        modal.style.display = 'flex';
+        });        modal.classList.add('is-active');
         modal.setAttribute('aria-hidden', 'false');
 
         // Focus first input or button
@@ -93,9 +90,7 @@ class UIManager {
         const modal = document.getElementById(modalId);
         if (!modal) return false;
 
-        const modalData = this.modals.get(modalId);
-
-        modal.classList.remove('show');
+        const modalData = this.modals.get(modalId);        modal.classList.remove('is-active');
         modal.setAttribute('aria-hidden', 'true');
 
         setTimeout(() => {
@@ -112,11 +107,9 @@ class UIManager {
 
         this.modals.delete(modalId);
         return true;
-    }
-
-    closeTopModal() {
+    }    closeTopModal() {
         const visibleModals = Array.from(this.modals.keys())
-            .filter(id => document.getElementById(id).classList.contains('show'));
+            .filter(id => document.getElementById(id).classList.contains('is-active'));
         
         if (visibleModals.length > 0) {
             this.hideModal(visibleModals[visibleModals.length - 1]);
@@ -128,13 +121,13 @@ class UIManager {
         const dropdown = document.getElementById(dropdownId);
         if (!dropdown) return false;
 
-        const isOpen = dropdown.classList.contains('show');
+        const isOpen = dropdown.classList.contains('is-active');
         
         // Close all other dropdowns
         this.closeAllDropdowns();
 
         if (!isOpen) {
-            dropdown.classList.add('show');
+            dropdown.classList.add('is-active');
             dropdown.setAttribute('aria-expanded', 'true');
             
             this.dropdowns.set(dropdownId, {
@@ -149,7 +142,7 @@ class UIManager {
         this.dropdowns.forEach((data, id) => {
             const dropdown = document.getElementById(id);
             if (dropdown) {
-                dropdown.classList.remove('show');
+                dropdown.classList.remove('is-active');
                 dropdown.setAttribute('aria-expanded', 'false');
             }
         });
@@ -224,37 +217,30 @@ class UIManager {
 
     renderNotification(notification) {
         const container = document.getElementById('toast-container') || this.createNotificationContainer();
-        
-        const notificationElement = document.createElement('div');
-        notificationElement.className = `notification toast ${notification.type}`;
+          const notificationElement = document.createElement('div');
+        notificationElement.className = `notification ${notification.type === 'success' ? 'is-success' : notification.type === 'error' ? 'is-danger' : notification.type === 'warning' ? 'is-warning' : 'is-info'} mb-3`;
         notificationElement.setAttribute('data-notification-id', notification.id);
         notificationElement.setAttribute('role', 'alert');
         notificationElement.setAttribute('aria-live', 'polite');
 
         const actionsHTML = notification.actions.map(action => 
-            `<button class="notification-action" onclick="${action.handler}">${action.label}</button>`
+            `<button class="button is-small ml-2" onclick="${action.handler}">${action.label}</button>`
         ).join('');
 
         notificationElement.innerHTML = `
-            <div class="notification-content">
-                <div class="notification-message">${notification.message}</div>
-                ${actionsHTML ? `<div class="notification-actions">${actionsHTML}</div>` : ''}
+            <button class="delete" onclick="uiManager.hideNotification('${notification.id}')" aria-label="Close notification"></button>
+            <div class="content">
+                ${notification.message}
+                ${actionsHTML ? `<div class="mt-2">${actionsHTML}</div>` : ''}
             </div>
-            <button class="notification-close" onclick="uiManager.hideNotification('${notification.id}')" aria-label="Close notification">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-
-        container.appendChild(notificationElement);
-
-        // Trigger entrance animation
-        setTimeout(() => notificationElement.classList.add('show'), 10);
-    }
-
-    createNotificationContainer() {
+        `;        container.appendChild(notificationElement);
+    }    createNotificationContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
-        container.className = 'toast-container';
+        container.className = 'is-fixed';
+        container.style.top = '1rem';
+        container.style.right = '1rem';
+        container.style.zIndex = '9999';
         document.body.appendChild(container);
         return container;
     }

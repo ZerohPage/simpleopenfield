@@ -1,0 +1,59 @@
+/* Bulma Extensions for SimpleOpenField */
+
+/* Loader for loading screen */
+.loader {
+    border: 4px solid #dbdbdb;
+    border-top: 4px solid #3273dc;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Status badges for jobs */
+.tag.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.tag.status-in-progress {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.tag.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.tag.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Priority badges */
+.tag.priority-low {
+    background-color: #e2e6ea;
+    color: #383d41;
+}
+
+.tag.priority-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.tag.priority-high {
+    background-color: #f5c6cb;
+    color: #721c24;
+}
+
+.tag.priority-urgent {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}

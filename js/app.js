@@ -111,20 +111,20 @@ class SimpleOpenFieldApp {
         this.showPage(page);
         this.updateActiveNavLink();
         this.updatePageContent();
-    }
-
-    showPage(page) {
+    }    showPage(page) {
         // Hide all pages
-        document.querySelectorAll('.page').forEach(p => {
-            p.classList.remove('active');
+        document.querySelectorAll('.content').forEach(p => {
+            p.classList.remove('is-active');
+            p.classList.add('is-hidden');
         });
 
         // Show selected page
         const targetPage = document.getElementById(`${page}-page`);
         if (targetPage) {
-            targetPage.classList.add('active');
+            targetPage.classList.add('is-active');
+            targetPage.classList.remove('is-hidden');
         }
-    }    updateActiveNavLink() {
+    }updateActiveNavLink() {
         document.querySelectorAll('.navbar-item[data-page]').forEach(link => {
             link.classList.remove('is-active');
             if (link.getAttribute('data-page') === this.currentPage) {
@@ -296,7 +296,7 @@ class SimpleOpenFieldApp {
                         <div class="recent-item-title">${job.id} - ${job.serviceType}</div>
                         <div class="recent-item-subtitle">${customer ? customer.name : 'Unknown Customer'}</div>
                     </div>
-                    <span class="recent-item-badge status-badge status-${job.status}">${job.status}</span>
+                    <span class="tag status-${job.status}">${job.status}</span>
                 </div>
             `;
         }).join('');
@@ -369,20 +369,26 @@ class SimpleOpenFieldApp {
                     <td>${job.id}</td>
                     <td>${customer ? customer.name : 'Unknown'}</td>
                     <td>${job.serviceType}</td>
-                    <td><span class="status-badge status-${job.status}">${job.status}</span></td>
+                    <td><span class="tag status-${job.status}">${job.status}</span></td>
                     <td>${technician ? technician.name : 'Unassigned'}</td>
                     <td>${scheduledDate}</td>
-                    <td><span class="status-badge priority-${job.priority}">${job.priority}</span></td>
+                    <td><span class="tag priority-${job.priority}">${job.priority}</span></td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="action-btn action-btn-view" onclick="app.viewJob('${job.id}')">
-                                <i class="fas fa-eye"></i>
+                        <div class="buttons">
+                            <button class="button is-small is-info" onclick="app.viewJob('${job.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-eye"></i>
+                                </span>
                             </button>
-                            <button class="action-btn action-btn-edit" onclick="app.editJob('${job.id}')">
-                                <i class="fas fa-edit"></i>
+                            <button class="button is-small is-warning" onclick="app.editJob('${job.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-edit"></i>
+                                </span>
                             </button>
-                            <button class="action-btn action-btn-delete" onclick="app.deleteJob('${job.id}')">
-                                <i class="fas fa-trash"></i>
+                            <button class="button is-small is-danger" onclick="app.deleteJob('${job.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-trash"></i>
+                                </span>
                             </button>
                         </div>
                     </td>
@@ -417,17 +423,25 @@ class SimpleOpenFieldApp {
                     <td>${customer.email}</td>
                     <td>${customer.phone}</td>
                     <td>${customer.address}</td>
-                    <td>${customerJobs.length}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn action-btn-view" onclick="app.viewCustomer('${customer.id}')">
-                                <i class="fas fa-eye"></i>
+                    <td>${customerJobs.length}</td>                    <td>
+                        <div class="buttons">
+                            <button class="button is-small is-info" onclick="app.viewCustomer('${customer.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-eye"></i>
+                                </span>
                             </button>
-                            <button class="action-btn action-btn-edit" onclick="app.editCustomer('${customer.id}')">
-                                <i class="fas fa-edit"></i>
+                            <button class="button is-small is-warning" onclick="app.editCustomer('${customer.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-edit"></i>
+                                </span>
                             </button>
-                            <button class="action-btn action-btn-delete" onclick="app.deleteCustomer('${customer.id}')">
-                                <i class="fas fa-trash"></i>
+                            <button class="button is-small is-danger" onclick="app.deleteCustomer('${customer.id}')">
+                                <span class="icon is-small">
+                                    <i class="fas fa-trash"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </td>
                             </button>
                         </div>
                     </td>
@@ -450,21 +464,27 @@ class SimpleOpenFieldApp {
 
         container.innerHTML = technicians.map(tech => {
             const techJobs = jobs.filter(j => j.technician === tech.id);
-            const initials = tech.name.split(' ').map(n => n[0]).join('');
-
-            return `
-                <div class="technician-card">
-                    <div class="technician-avatar">${initials}</div>
-                    <div class="technician-name">${tech.name}</div>
-                    <div class="technician-skills">${tech.skills}</div>
-                    <div class="technician-status status-${tech.status}">
-                        <i class="fas fa-circle"></i>
-                        ${tech.status.replace('-', ' ')}
-                    </div>
-                    <div class="mt-4">
-                        <button class="btn btn-sm btn-secondary" onclick="app.viewTechnician('${tech.id}')">
-                            View Details
-                        </button>
+            const initials = tech.name.split(' ').map(n => n[0]).join('');            return `
+                <div class="column is-one-third">
+                    <div class="card">
+                        <div class="card-content has-text-centered">
+                            <div class="media">
+                                <div class="media-content">
+                                    <div class="has-text-weight-bold has-text-primary mb-2" style="font-size: 2rem; background: #f0f0f0; border-radius: 50%; width: 60px; height: 60px; line-height: 60px; margin: 0 auto;">${initials}</div>
+                                    <p class="title is-5">${tech.name}</p>
+                                    <p class="subtitle is-6">${tech.skills}</p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                <span class="tag ${tech.status === 'available' ? 'is-success' : tech.status === 'busy' ? 'is-warning' : 'is-light'}">
+                                    ${tech.status.replace('-', ' ')}
+                                </span>
+                                <br><br>
+                                <button class="button is-small is-outlined" onclick="app.viewTechnician('${tech.id}')">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -700,16 +720,11 @@ class SimpleOpenFieldApp {
                 <p>${message}</p>
             </div>
         `;
-    }
-
-    hideLoadingScreen() {
+    }    hideLoadingScreen() {
         setTimeout(() => {
             const loadingScreen = document.getElementById('loading-screen');
             if (loadingScreen) {
-                loadingScreen.classList.add('hidden');
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 300);
+                loadingScreen.classList.remove('is-active');
             }
         }, 1500);
     }
