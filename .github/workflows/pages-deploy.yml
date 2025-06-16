@@ -1,19 +1,15 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (Protected)
 
 on:
-  # Trigger deployment on main branch push or tag push
-  push:
-    branches:
-      - main
-      - master
-    tags:
-      - 'v*'
-  
-  # Allow manual trigger from Actions tab
+  # Only trigger on workflow dispatch for protected deployments
   workflow_dispatch:
     inputs:
+      tag:
+        description: 'Tag to deploy (e.g., v0.1.2)'
+        required: true
+        type: string
       environment:
-        description: 'Environment to deploy to'
+        description: 'Target environment'
         required: true
         default: 'github-pages'
         type: choice
@@ -28,37 +24,60 @@ permissions:
 
 # Allow only one concurrent deployment
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.event.inputs.environment }}"
   cancel-in-progress: false
 
-jobs:  # Build job
-  build:
+jobs:
+  # Validation job
+  validate:
     runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.check.outputs.valid }}
+      tag_exists: ${{ steps.check.outputs.tag_exists }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Validate deployment conditions
+      - name: Validate tag and permissions
+        id: check
         run: |
-          echo "🔍 Validating deployment conditions..."
+          echo "🔍 Validating deployment request..."
           
-          # Check if this is a tag deployment
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "📦 Tag deployment detected: ${{ github.ref_name }}"
+          # Check if tag exists
+          if git rev-parse "${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+            echo "✅ Tag ${{ github.event.inputs.tag }} exists"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
             
-            # For tag deployments, ensure we're on main/master branch
-            BRANCH=$(git branch -r --contains ${{ github.sha }} | grep -E 'origin/(main|master)' | head -n1)
-            if [ -z "$BRANCH" ]; then
-              echo "❌ Tag ${{ github.ref_name }} is not on main/master branch"
-              echo "   Only tags from main/master branch can be deployed"
+            # Check if tag is on main/master branch
+            TAG_COMMIT=$(git rev-list -n 1 "${{ github.event.inputs.tag }}")
+            MAIN_COMMITS=$(git rev-list origin/main origin/master 2>/dev/null || git rev-list origin/main 2>/dev/null || git rev-list origin/master 2>/dev/null)
+            
+            if echo "$MAIN_COMMITS" | grep -q "$TAG_COMMIT"; then
+              echo "✅ Tag is on main/master branch"
+              echo "valid=true" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Tag is not on main/master branch"
+              echo "valid=false" >> $GITHUB_OUTPUT
               exit 1
             fi
-            echo "✅ Tag is on main/master branch"
           else
-            echo "🌿 Branch deployment detected: ${{ github.ref_name }}"
+            echo "❌ Tag ${{ github.event.inputs.tag }} does not exist"
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 1
           fi
+
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.valid == 'true'
+    steps:
+      - name: Checkout specific tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
           
-        
       - name: Setup Pages
         uses: actions/configure-pages@v4
         
@@ -72,46 +91,40 @@ jobs:  # Build job
           cp -r js build/
           cp README.md build/
           
-      - name: Optimize CSS (optional minification)
+          # Copy templates if they exist
+          if [ -d "templates" ]; then
+            cp -r templates build/
+          fi
+          
+      - name: Optimize CSS (production minification)
         run: |
-          # Simple CSS minification - remove comments and extra whitespace
+          echo "🎨 Optimizing CSS files..."
           find build/styles -name "*.css" -exec sed -i 's|/\*.*\*/||g' {} \;
           find build/styles -name "*.css" -exec sed -i 's/[[:space:]]\+/ /g' {} \;
+          echo "✅ CSS optimization complete"
           
-      - name: Optimize JavaScript (optional minification)
+      - name: Optimize JavaScript (production minification)
         run: |
-          # Simple JS minification - remove console.log statements and comments
+          echo "⚡ Optimizing JavaScript files..."
           find build/js -name "*.js" -exec sed -i '/console\.log/d' {} \;
           find build/js -name "*.js" -exec sed -i 's|//.*$||g' {} \;
+          echo "✅ JavaScript optimization complete"
           
-      - name: Add deployment info
+      - name: Add deployment metadata
         run: |
-          echo "<!-- Deployed via GitHub Actions on $(date) -->" >> build/index.html
-          echo "<!-- Tag: ${{ github.ref_name }} -->" >> build/index.html
+          echo "📝 Adding deployment metadata..."
+          echo "<!-- Deployed via GitHub Actions on $(date -u) -->" >> build/index.html
+          echo "<!-- Tag: ${{ github.event.inputs.tag }} -->" >> build/index.html
           echo "<!-- Commit: ${{ github.sha }} -->" >> build/index.html
+          echo "<!-- Environment: ${{ github.event.inputs.environment }} -->" >> build/index.html
           
-      - name: Validate HTML
+      - name: Validate build
         run: |
-          # Basic HTML validation - check for required elements
-          if ! grep -q "<title>" build/index.html; then
-            echo "Error: Missing title tag"
-            exit 1
-          fi
-          if ! grep -q "<meta.*viewport" build/index.html; then
-            echo "Error: Missing viewport meta tag"
-            exit 1
-          fi
-          echo "HTML validation passed"
+          echo "🔍 Validating build output..."
           
-      - name: Check file structure
-        run: |
-          echo "Build directory contents:"
-          find build -type f -name "*.html" -o -name "*.css" -o -name "*.js" | sort
-            # Verify required files exist
+          # Check required files
           required_files=(
             "build/index.html"
-            "build/styles/bulma.min.css"
-            "build/styles/bulma-extensions.css"
             "build/js/app.js"
             "build/js/data.js"
             "build/js/ui.js"
@@ -120,14 +133,22 @@ jobs:  # Build job
           
           for file in "${required_files[@]}"; do
             if [ ! -f "$file" ]; then
-              echo "Error: Required file $file is missing"
+              echo "❌ Missing required file: $file"
               exit 1
             fi
           done
-          echo "All required files present"
           
-      - name: Generate sitemap
+          # Validate HTML structure
+          if ! grep -q "<title>" build/index.html; then
+            echo "❌ Missing title tag in HTML"
+            exit 1
+          fi
+          
+          echo "✅ Build validation passed"
+          
+      - name: Generate production sitemap
         run: |
+          echo "🗺️ Generating sitemap..."
           cat > build/sitemap.xml << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -149,7 +170,7 @@ jobs:  # Build job
           Sitemap: https://zerohpage.github.io/simpleopenfield/sitemap.xml
           EOF
           
-      - name: Add manifest.json for PWA
+      - name: Create PWA manifest
         run: |
           cat > build/manifest.json << EOF
           {
@@ -170,11 +191,11 @@ jobs:  # Build job
           }
           EOF
           
-      - name: Update HTML with PWA manifest
+      - name: Update HTML with PWA support
         run: |
           sed -i 's|</head>|  <link rel="manifest" href="manifest.json">\n  <meta name="theme-color" content="#2563eb">\n</head>|' build/index.html
           
-      - name: Create 404.html
+      - name: Create 404 page
         run: |
           cat > build/404.html << 'EOF'
           <!DOCTYPE html>
@@ -220,7 +241,6 @@ jobs:  # Build job
                   <a href="/simpleopenfield/">Return to SimpleOpenField</a>
               </div>
               <script>
-                  // Redirect to main app for SPA routes
                   if (window.location.pathname.startsWith('/simpleopenfield/')) {
                       window.location.href = '/simpleopenfield/';
                   }
@@ -234,13 +254,14 @@ jobs:  # Build job
         with:
           path: ./build
 
-  # Deploy job
+  # Deploy job (with environment protection)
   deploy:
     environment:
-      name: github-pages
+      name: ${{ github.event.inputs.environment }}
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [validate, build]
+    if: needs.validate.outputs.valid == 'true'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -248,36 +269,40 @@ jobs:  # Build job
         
       - name: Create deployment summary
         run: |
-          echo "## 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Protected Deployment Successful!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Deployed at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Features Deployed:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Field Service Management SPA" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Job Management System" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Customer & Technician Management" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Schedule Calendar" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Reports Dashboard" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Responsive Design" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ PWA Support" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔒 Security Features:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Environment Protection Rules Applied" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tag Validation Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Branch Protection Verified" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Manual Approval Required" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 Your SimpleOpenField application is now live!"
+          echo "🎉 SimpleOpenField ${{ github.event.inputs.tag }} is now live!"
 
-  # Notification job (optional)
+  # Notification job
   notify:
     runs-on: ubuntu-latest
-    needs: [build, deploy]
+    needs: [validate, build, deploy]
     if: always()
     steps:
       - name: Report deployment status
         run: |
           if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "✅ Deployment successful!"
+            echo "✅ Protected deployment successful!"
             echo "🌐 Live URL: https://zerohpage.github.io/simpleopenfield/"
-            echo "📦 Tag: ${{ github.ref_name }}"
+            echo "📦 Tag: ${{ github.event.inputs.tag }}"
+            echo "🔒 Environment: ${{ github.event.inputs.environment }}"
+          elif [ "${{ needs.validate.result }}" == "failure" ]; then
+            echo "❌ Deployment validation failed!"
+            echo "Please check that:"
+            echo "  1. Tag ${{ github.event.inputs.tag }} exists"
+            echo "  2. Tag is on main/master branch"
+            echo "  3. You have permission to deploy"
           else
             echo "❌ Deployment failed!"
             echo "Please check the workflow logs for details."

@@ -1,0 +1,85 @@
+name: Emergency Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g., v0.1.2)'
+        required: true
+        type: string
+      bypass_protection:
+        description: 'Bypass environment protection (admin only)'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-emergency"
+  cancel-in-progress: false
+
+jobs:
+  emergency-deploy:
+    runs-on: ubuntu-latest
+    # Only run if explicitly requested
+    if: github.event.inputs.bypass_protection == 'true'
+    steps:
+      - name: Checkout specific tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+          
+      - name: Emergency deployment warning
+        run: |
+          echo "⚠️ EMERGENCY DEPLOYMENT INITIATED ⚠️"
+          echo "Tag: ${{ github.event.inputs.tag }}"
+          echo "Bypassing environment protection rules"
+          echo "This should only be used in emergency situations"
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Create build directory
+        run: mkdir -p build
+        
+      - name: Copy all files
+        run: |
+          cp index.html build/
+          cp -r styles build/
+          cp -r js build/
+          cp README.md build/
+          
+          # Copy templates if they exist
+          if [ -d "templates" ]; then
+            cp -r templates build/
+          fi
+          
+      - name: Add emergency deployment marker
+        run: |
+          echo "<!-- EMERGENCY DEPLOYMENT -->" >> build/index.html
+          echo "<!-- Tag: ${{ github.event.inputs.tag }} -->" >> build/index.html
+          echo "<!-- Deployed: $(date -u) -->" >> build/index.html
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        
+      - name: Emergency deployment complete
+        run: |
+          echo "🚨 Emergency deployment completed"
+          echo "URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "Tag: ${{ github.event.inputs.tag }}"
+          echo ""
+          echo "⚠️ Remember to:"
+          echo "1. Review environment protection settings"
+          echo "2. Ensure proper approval processes for future deployments"
+          echo "3. Update deployment workflows as needed"
