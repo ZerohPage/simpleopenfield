@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleOpenField - Field Service Management</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <h2>SimpleOpenField</h2>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-tools"></i>
+            <span>SimpleOpenField</span>
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+            <li class="nav-item">
+                <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#jobs" class="nav-link" data-page="jobs">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Jobs</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#customers" class="nav-link" data-page="customers">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#technicians" class="nav-link" data-page="technicians">
+                    <i class="fas fa-user-hard-hat"></i>
+                    <span>Technicians</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#schedule" class="nav-link" data-page="schedule">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Schedule</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#reports" class="nav-link" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+        <div class="nav-toggle" id="nav-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="openModal('newJobModal')">
+                        <i class="fas fa-plus"></i> New Job
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-jobs">0</h3>
+                        <p>Total Jobs</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="pending-jobs">0</h3>
+                        <p>Pending Jobs</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="completed-jobs">0</h3>
+                        <p>Completed Jobs</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-customers">0</h3>
+                        <p>Total Customers</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-section">
+                    <h2>Recent Jobs</h2>
+                    <div id="recent-jobs" class="recent-items">
+                        <!-- Recent jobs will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="dashboard-section">
+                    <h2>Today's Schedule</h2>
+                    <div id="todays-schedule" class="schedule-items">
+                        <!-- Today's schedule will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Page -->
+        <div id="jobs-page" class="page">
+            <div class="page-header">
+                <h1>Jobs Management</h1>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="exportJobs()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('newJobModal')">
+                        <i class="fas fa-plus"></i> New Job
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="job-status-filter">Status:</label>
+                    <select id="job-status-filter" onchange="filterJobs()">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="job-search">Search:</label>
+                    <input type="text" id="job-search" placeholder="Search jobs..." oninput="searchJobs()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Customer</th>
+                            <th>Service Type</th>
+                            <th>Status</th>
+                            <th>Technician</th>
+                            <th>Scheduled Date</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobs-table-body">
+                        <!-- Jobs will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Customers Page -->
+        <div id="customers-page" class="page">
+            <div class="page-header">
+                <h1>Customer Management</h1>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="exportCustomers()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('newCustomerModal')">
+                        <i class="fas fa-plus"></i> New Customer
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="customer-search">Search:</label>
+                    <input type="text" id="customer-search" placeholder="Search customers..." oninput="searchCustomers()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="customers-table">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Total Jobs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        <!-- Customers will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Technicians Page -->
+        <div id="technicians-page" class="page">
+            <div class="page-header">
+                <h1>Technician Management</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="openModal('newTechnicianModal')">
+                        <i class="fas fa-plus"></i> New Technician
+                    </button>
+                </div>
+            </div>
+
+            <div class="technicians-grid" id="technicians-grid">
+                <!-- Technicians will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Schedule Page -->
+        <div id="schedule-page" class="page">
+            <div class="page-header">
+                <h1>Schedule</h1>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="previousWeek()">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <button class="btn btn-secondary" onclick="todayView()">Today</button>
+                    <button class="btn btn-secondary" onclick="nextWeek()">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="calendar-container" class="calendar-container">
+                <!-- Calendar will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports-page" class="page">
+            <div class="page-header">
+                <h1>Reports</h1>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="generateReport()">
+                        <i class="fas fa-file-pdf"></i> Generate PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="reports-grid">
+                <div class="report-card">
+                    <h3>Job Statistics</h3>
+                    <canvas id="jobs-chart"></canvas>
+                </div>
+                <div class="report-card">
+                    <h3>Revenue Trends</h3>
+                    <canvas id="revenue-chart"></canvas>
+                </div>
+                <div class="report-card">
+                    <h3>Technician Performance</h3>
+                    <div id="technician-performance"></div>
+                </div>
+                <div class="report-card">
+                    <h3>Customer Satisfaction</h3>
+                    <div id="customer-satisfaction"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- New Job Modal -->
+    <div id="newJobModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Job</h2>
+                <span class="close" onclick="closeModal('newJobModal')">&times;</span>
+            </div>
+            <form id="newJobForm" class="modal-form">
+                <div class="form-group">
+                    <label for="job-customer">Customer:</label>
+                    <select id="job-customer" required>
+                        <option value="">Select Customer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="job-service-type">Service Type:</label>
+                    <select id="job-service-type" required>
+                        <option value="">Select Service</option>
+                        <option value="installation">Installation</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="repair">Repair</option>
+                        <option value="inspection">Inspection</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="job-description">Description:</label>
+                    <textarea id="job-description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="job-technician">Assign Technician:</label>
+                    <select id="job-technician">
+                        <option value="">Select Technician</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="job-date">Scheduled Date:</label>
+                    <input type="datetime-local" id="job-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="job-priority">Priority:</label>
+                    <select id="job-priority" required>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newJobModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Job</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Customer Modal -->
+    <div id="newCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Customer</h2>
+                <span class="close" onclick="closeModal('newCustomerModal')">&times;</span>
+            </div>
+            <form id="newCustomerForm" class="modal-form">
+                <div class="form-group">
+                    <label for="customer-name">Name:</label>
+                    <input type="text" id="customer-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-email">Email:</label>
+                    <input type="email" id="customer-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone">Phone:</label>
+                    <input type="tel" id="customer-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-address">Address:</label>
+                    <textarea id="customer-address" rows="3" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newCustomerModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Technician Modal -->
+    <div id="newTechnicianModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Technician</h2>
+                <span class="close" onclick="closeModal('newTechnicianModal')">&times;</span>
+            </div>
+            <form id="newTechnicianForm" class="modal-form">
+                <div class="form-group">
+                    <label for="technician-name">Name:</label>
+                    <input type="text" id="technician-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="technician-email">Email:</label>
+                    <input type="email" id="technician-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="technician-phone">Phone:</label>
+                    <input type="tel" id="technician-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="technician-skills">Skills:</label>
+                    <input type="text" id="technician-skills" placeholder="e.g., HVAC, Plumbing, Electrical">
+                </div>
+                <div class="form-group">
+                    <label for="technician-status">Status:</label>
+                    <select id="technician-status" required>
+                        <option value="available">Available</option>
+                        <option value="busy">Busy</option>
+                        <option value="off-duty">Off Duty</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newTechnicianModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Technician</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/utils.js"></script>
+</body>
+</html>
