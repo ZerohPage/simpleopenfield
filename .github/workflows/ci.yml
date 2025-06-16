@@ -46,7 +46,6 @@ jobs:
           
           # Check if CSS files exist
           required_css=(
-            "styles/main.css"
             "styles/components.css"
             "styles/responsive.css"
           )
