@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>SimpleOpenField - Field Service Management</title>    <!-- Bulma CSS Framework -->
+    <link rel="stylesheet" href="styles/bulma.min.css">
+    <!-- Minimal Bulma Extensions -->
+    <link rel="stylesheet" href="styles/bulma-extensions.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>    <!-- Loading Screen -->
+    <div id="loading-screen" class="modal is-active">
+        <div class="modal-background"></div>
+        <div class="modal-content has-text-centered">
+            <div class="box">
+                <div class="loader"></div>
+                <h2 class="title is-4 mt-4">SimpleOpenField</h2>
+            </div>
+        </div>
+    </div><!-- Navigation - Bulma Navbar -->
+    <nav class="navbar is-white" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="#dashboard">
+                <i class="fas fa-tools"></i>
+                <span>SimpleOpenField</span>
+            </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarMenu" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item is-active" data-page="dashboard" href="#dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="navbar-item" data-page="jobs" href="#jobs">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Jobs</span>
+                </a>
+                <a class="navbar-item" data-page="customers" href="#customers">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+                <a class="navbar-item" data-page="technicians" href="#technicians">
+                    <i class="fas fa-user-hard-hat"></i>
+                    <span>Technicians</span>
+                </a>
+                <a class="navbar-item" data-page="schedule" href="#schedule">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Schedule</span>
+                </a>
+                <a class="navbar-item" data-page="reports" href="#reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </div>
+        </div>
+    </nav>    <!-- Main Content -->
+    <main class="section">
+        <div class="container">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="content is-active">
+                <div class="level mb-5">
+                    <div class="level-left">
+                        <h1 class="title is-3">Dashboard</h1>
+                    </div>
+                    <div class="level-right">
+                        <div class="buttons">
+                            <button class="button is-primary" onclick="openModal('newJobModal')">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>New Job</span>
+                            </button>
+                        </div>
+                    </div>
+                </div><div class="columns">
+                    <div class="column">
+                        <div class="box has-text-centered">
+                            <div class="icon is-large has-text-primary">
+                                <i class="fas fa-2x fa-briefcase"></i>
+                            </div>
+                            <p class="title is-4" id="total-jobs">0</p>
+                            <p class="subtitle is-6">Total Jobs</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="box has-text-centered">
+                            <div class="icon is-large has-text-warning">
+                                <i class="fas fa-2x fa-clock"></i>
+                            </div>
+                            <p class="title is-4" id="pending-jobs">0</p>
+                            <p class="subtitle is-6">Pending Jobs</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="box has-text-centered">
+                            <div class="icon is-large has-text-success">
+                                <i class="fas fa-2x fa-check-circle"></i>
+                            </div>
+                            <p class="title is-4" id="completed-jobs">0</p>
+                            <p class="subtitle is-6">Completed Jobs</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="box has-text-centered">
+                            <div class="icon is-large has-text-info">
+                                <i class="fas fa-2x fa-users"></i>
+                            </div>
+                            <p class="title is-4" id="total-customers">0</p>
+                            <p class="subtitle is-6">Total Customers</p>
+                        </div>
+                    </div>
+                </div>                <div class="columns">
+                    <div class="column is-half">
+                        <div class="box">
+                            <h2 class="title is-5">Recent Jobs</h2>
+                            <div id="recent-jobs" class="recent-items">
+                                <!-- Recent jobs will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-half">
+                        <div class="box">
+                            <h2 class="title is-5">Today's Schedule</h2>
+                            <div id="todays-schedule" class="schedule-items">
+                                <!-- Today's schedule will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        <!-- Jobs Page -->
+        <div id="jobs-page" class="content is-hidden">
+            <div class="level mb-5">
+                <div class="level-left">
+                    <h1 class="title is-3">Jobs Management</h1>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button is-light" onclick="exportJobs()">
+                            <span class="icon">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Export</span>
+                        </button>
+                        <button class="button is-primary" onclick="openModal('newJobModal')">
+                            <span class="icon">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span>New Job</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns mb-4">
+                <div class="column is-narrow">
+                    <div class="field">
+                        <label class="label" for="job-status-filter">Status:</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="job-status-filter" onchange="filterJobs()">
+                                    <option value="">All</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="field">
+                        <label class="label" for="job-search">Search:</label>
+                        <div class="control">
+                            <input class="input" type="text" id="job-search" placeholder="Search jobs..." oninput="searchJobs()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table is-fullwidth is-striped is-hoverable" id="jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Customer</th>
+                            <th>Service Type</th>
+                            <th>Status</th>
+                            <th>Technician</th>
+                            <th>Scheduled Date</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobs-table-body">
+                        <!-- Jobs will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>        <!-- Customers Page -->
+        <div id="customers-page" class="content is-hidden">
+            <div class="level mb-5">
+                <div class="level-left">
+                    <h1 class="title is-3">Customer Management</h1>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button is-light" onclick="exportCustomers()">
+                            <span class="icon">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Export</span>
+                        </button>
+                        <button class="button is-primary" onclick="openModal('newCustomerModal')">
+                            <span class="icon">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span>New Customer</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns mb-4">
+                <div class="column">
+                    <div class="field">
+                        <label class="label" for="customer-search">Search:</label>
+                        <div class="control">
+                            <input class="input" type="text" id="customer-search" placeholder="Search customers..." oninput="searchCustomers()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table is-fullwidth is-striped is-hoverable" id="customers-table">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Total Jobs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        <!-- Customers will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>        <!-- Technicians Page -->
+        <div id="technicians-page" class="content is-hidden">
+            <div class="level mb-5">
+                <div class="level-left">
+                    <h1 class="title is-3">Technician Management</h1>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button is-primary" onclick="openModal('newTechnicianModal')">
+                            <span class="icon">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span>New Technician</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns is-multiline" id="technicians-grid">
+                <!-- Technicians will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Schedule Page -->
+        <div id="schedule-page" class="content is-hidden">
+            <div class="level mb-5">
+                <div class="level-left">
+                    <h1 class="title is-3">Schedule</h1>
+                </div>
+                <div class="level-right">
+                    <div class="buttons has-addons">
+                        <button class="button" onclick="previousWeek()">
+                            <span class="icon">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="button" onclick="todayView()">Today</button>
+                        <button class="button" onclick="nextWeek()">
+                            <span>Next</span>
+                            <span class="icon">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>            <div id="calendar-container" class="box">
+                <!-- Calendar will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports-page" class="content is-hidden">
+            <div class="level mb-5">
+                <div class="level-left">
+                    <h1 class="title is-3">Reports</h1>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button is-light" onclick="generateReport()">
+                            <span class="icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </span>
+                            <span>Generate PDF</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns is-multiline">
+                <div class="column is-half">
+                    <div class="box">
+                        <h3 class="title is-5">Job Statistics</h3>
+                        <canvas id="jobs-chart"></canvas>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <div class="box">
+                        <h3 class="title is-5">Revenue Trends</h3>
+                        <canvas id="revenue-chart"></canvas>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <div class="box">
+                        <h3 class="title is-5">Technician Performance</h3>
+                        <div id="technician-performance"></div>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <div class="box">
+                        <h3 class="title is-5">Customer Satisfaction</h3>
+                        <div id="customer-satisfaction"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>    <!-- Modals -->
+    <!-- New Job Modal -->
+    <div id="newJobModal" class="modal">
+        <div class="modal-background" onclick="closeModal('newJobModal')"></div>
+        <div class="modal-content">
+            <div class="box">
+                <div class="level mb-4">
+                    <div class="level-left">
+                        <h2 class="title is-4">Create New Job</h2>
+                    </div>
+                    <div class="level-right">
+                        <button class="delete is-large" onclick="closeModal('newJobModal')" aria-label="close"></button>
+                    </div>
+                </div>
+                <form id="newJobForm">
+                    <div class="field">
+                        <label class="label" for="job-customer">Customer:</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="job-customer" required>
+                                    <option value="">Select Customer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>                    <div class="field">
+                        <label class="label" for="job-service-type">Service Type:</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="job-service-type" required>
+                                    <option value="">Select Service</option>
+                                    <option value="installation">Installation</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="repair">Repair</option>
+                                    <option value="inspection">Inspection</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="job-description">Description:</label>
+                        <div class="control">
+                            <textarea class="textarea" id="job-description" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="job-technician">Assign Technician:</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="job-technician">
+                                    <option value="">Select Technician</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="job-date">Scheduled Date:</label>
+                        <div class="control">
+                            <input class="input" type="datetime-local" id="job-date" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="job-priority">Priority:</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="job-priority" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button type="button" class="button" onclick="closeModal('newJobModal')">Cancel</button>
+                        </div>
+                        <div class="control">
+                            <button type="submit" class="button is-primary">Create Job</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    <!-- New Customer Modal -->
+    <div id="newCustomerModal" class="modal">
+        <div class="modal-background" onclick="closeModal('newCustomerModal')"></div>
+        <div class="modal-content">
+            <div class="box">
+                <div class="level mb-4">
+                    <div class="level-left">
+                        <h2 class="title is-4">Add New Customer</h2>
+                    </div>
+                    <div class="level-right">
+                        <button class="delete is-large" onclick="closeModal('newCustomerModal')" aria-label="close"></button>
+                    </div>
+                </div>
+                <form id="newCustomerForm">
+                    <div class="field">
+                        <label class="label" for="customer-name">Name:</label>
+                        <div class="control">
+                            <input class="input" type="text" id="customer-name" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="customer-email">Email:</label>
+                        <div class="control">
+                            <input class="input" type="email" id="customer-email" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="customer-phone">Phone:</label>
+                        <div class="control">
+                            <input class="input" type="tel" id="customer-phone" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="customer-address">Address:</label>
+                        <div class="control">
+                            <textarea class="textarea" id="customer-address" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button type="button" class="button" onclick="closeModal('newCustomerModal')">Cancel</button>
+                        </div>
+                        <div class="control">
+                            <button type="submit" class="button is-primary">Add Customer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    <!-- New Technician Modal -->
+    <div id="newTechnicianModal" class="modal">
+        <div class="modal-background" onclick="closeModal('newTechnicianModal')"></div>
+        <div class="modal-content">
+            <div class="box">
+                <div class="level mb-4">
+                    <div class="level-left">
+                        <h2 class="title is-4">Add New Technician</h2>
+                    </div>
+                    <div class="level-right">
+                        <button class="delete is-large" onclick="closeModal('newTechnicianModal')" aria-label="close"></button>
+                    </div>
+                </div>
+                <form id="newTechnicianForm">
+                    <div class="field">
+                        <label class="label" for="technician-name">Name:</label>
+                        <div class="control">
+                            <input class="input" type="text" id="technician-name" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="technician-email">Email:</label>
+                        <div class="control">
+                            <input class="input" type="email" id="technician-email" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="technician-phone">Phone:</label>
+                        <div class="control">
+                            <input class="input" type="tel" id="technician-phone" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="technician-skills">Skills:</label>
+                        <div class="control">
+                            <input class="input" type="text" id="technician-skills" placeholder="e.g., HVAC, Plumbing, Electrical">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="technician-status">Status:</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select id="technician-status" required>
+                                    <option value="available">Available</option>
+                                    <option value="busy">Busy</option>
+                                    <option value="off-duty">Off Duty</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button type="button" class="button" onclick="closeModal('newTechnicianModal')">Cancel</button>
+                        </div>
+                        <div class="control">
+                            <button type="submit" class="button is-primary">Add Technician</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    <!-- Toast Notifications -->
+    <div id="toast-container" class="is-fixed" style="top: 1rem; right: 1rem; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/utils.js"></script>
+</body>
+</html>

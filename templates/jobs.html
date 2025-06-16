@@ -1,0 +1,70 @@
+<div id="jobs-page" class="content is-hidden">
+    <div class="level mb-5">
+        <div class="level-left">
+            <h1 class="title is-3">Jobs Management</h1>
+        </div>
+        <div class="level-right">
+            <div class="buttons">
+                <button class="button is-light" onclick="exportJobs()">
+                    <span class="icon">
+                        <i class="fas fa-download"></i>
+                    </span>
+                    <span>Export</span>
+                </button>
+                <button class="button is-primary" onclick="openModal('newJobModal')">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>New Job</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns mb-4">
+        <div class="column is-narrow">
+            <div class="field">
+                <label class="label" for="job-status-filter">Status:</label>
+                <div class="control">
+                    <div class="select">
+                        <select id="job-status-filter" onchange="filterJobs()">
+                            <option value="">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="field">
+                <label class="label" for="job-search">Search:</label>
+                <div class="control">
+                    <input class="input" type="text" id="job-search" placeholder="Search jobs..." oninput="searchJobs()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable" id="jobs-table">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Customer</th>
+                    <th>Service Type</th>
+                    <th>Status</th>
+                    <th>Technician</th>
+                    <th>Scheduled Date</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="jobs-table-body">
+                <!-- Jobs will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>

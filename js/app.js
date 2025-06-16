@@ -4,16 +4,15 @@ class SimpleOpenFieldApp {
         this.currentPage = 'dashboard';
         this.currentWeek = new Date();
         this.init();
-    }
-
-    init() {
-        this.initializeApp();
+    }    async init() {
+        await this.initializeApp();
         this.setupEventListeners();
         this.loadData();
         this.hideLoadingScreen();
-    }
-
-    initializeApp() {
+    }    async initializeApp() {
+        // Initialize template system first
+        await pageManager.init();
+        
         // Initialize navigation
         this.updateActiveNavLink();
         
@@ -22,10 +21,7 @@ class SimpleOpenFieldApp {
         
         // Initialize forms
         this.setupForms();
-        
-        // Load initial page
-        this.showPage(this.currentPage);
-    }    setupEventListeners() {        // Navigation links - Updated for Bulma navbar
+    }setupEventListeners() {        // Navigation links - Updated for Bulma navbar
         document.querySelectorAll('.navbar-item[data-page]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -104,26 +100,15 @@ class SimpleOpenFieldApp {
                 this.handleNewTechnician();
             });
         }
-    }
-
-    navigateToPage(page) {
+    }    async navigateToPage(page) {
         this.currentPage = page;
-        this.showPage(page);
+        await pageManager.showPage(page);
         this.updateActiveNavLink();
         this.updatePageContent();
-    }    showPage(page) {
-        // Hide all pages
-        document.querySelectorAll('.content').forEach(p => {
-            p.classList.remove('is-active');
-            p.classList.add('is-hidden');
-        });
-
-        // Show selected page
-        const targetPage = document.getElementById(`${page}-page`);
-        if (targetPage) {
-            targetPage.classList.add('is-active');
-            targetPage.classList.remove('is-hidden');
-        }
+    }    // This method is now handled by pageManager
+    // Keeping for backward compatibility
+    async showPage(page) {
+        await pageManager.showPage(page);
     }updateActiveNavLink() {
         document.querySelectorAll('.navbar-item[data-page]').forEach(link => {
             link.classList.remove('is-active');
@@ -736,21 +721,27 @@ class SimpleOpenFieldApp {
         
         if (window.innerWidth > 767) {
             navMenu.classList.remove('active');
-            navToggle.classList.remove('active');
-        }
+            navToggle.classList.remove('active');        }
     }
 
     // Modal functions
-    openModal(modalId) {
-        const modal = document.getElementById(modalId);
+    async openModal(modalId) {
+        // Load modal template if not already loaded
+        const modal = await pageManager.loadModal(modalId);
         if (modal) {
-            modal.classList.add('show');
-            modal.style.display = 'flex';
+            modal.classList.add('is-active');
+            document.body.classList.add('is-clipped');
             
             // Populate dropdowns when opening job modal
             if (modalId === 'newJobModal') {
                 this.populateCustomerDropdowns();
                 this.populateTechnicianDropdowns();
+            }
+            
+            // Focus management for accessibility
+            const firstInput = modal.querySelector('input, select, textarea, button');
+            if (firstInput) {
+                firstInput.focus();
             }
         }
     }
@@ -758,10 +749,8 @@ class SimpleOpenFieldApp {
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 200);
+            modal.classList.remove('is-active');
+            document.body.classList.remove('is-clipped');
         }
     }
 
@@ -903,15 +892,56 @@ class SimpleOpenFieldApp {
     }
 }
 
-// Global functions for onclick handlers
-function openModal(modalId) {
+// Page initialization functions called by template system
+window.initDashboardPage = () => {
     if (window.app) {
-        window.app.openModal(modalId);
+        window.app.loadDashboardData();
+    }
+};
+
+window.initJobsPage = () => {
+    if (window.app) {
+        window.app.loadJobsData();
+    }
+};
+
+window.initCustomersPage = () => {
+    if (window.app) {
+        window.app.loadCustomersData();
+    }
+};
+
+window.initTechniciansPage = () => {
+    if (window.app) {
+        window.app.loadTechniciansData();
+    }
+};
+
+window.initSchedulePage = () => {
+    if (window.app) {
+        window.app.loadScheduleData();
+    }
+};
+
+window.initReportsPage = () => {
+    if (window.app) {
+        window.app.loadReportsData();
+    }
+};
+
+// Global functions for onclick handlers
+async function openModal(modalId) {
+    if (window.ModalManager) {
+        await window.ModalManager.openModal(modalId);
+    } else if (window.app) {
+        await window.app.openModal(modalId);
     }
 }
 
 function closeModal(modalId) {
-    if (window.app) {
+    if (window.ModalManager) {
+        window.ModalManager.closeModal(modalId);
+    } else if (window.app) {
         window.app.closeModal(modalId);
     }
 }

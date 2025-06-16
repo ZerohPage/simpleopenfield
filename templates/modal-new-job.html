@@ -1,0 +1,85 @@
+<div id="newJobModal" class="modal">
+    <div class="modal-background" onclick="closeModal('newJobModal')"></div>
+    <div class="modal-content">
+        <div class="box">
+            <div class="level mb-4">
+                <div class="level-left">
+                    <h2 class="title is-4">Create New Job</h2>
+                </div>
+                <div class="level-right">
+                    <button class="delete is-large" onclick="closeModal('newJobModal')" aria-label="close"></button>
+                </div>
+            </div>
+            <form id="newJobForm">
+                <div class="field">
+                    <label class="label" for="job-customer">Customer:</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="job-customer" required>
+                                <option value="">Select Customer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label" for="job-service-type">Service Type:</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="job-service-type" required>
+                                <option value="">Select Service</option>
+                                <option value="installation">Installation</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="repair">Repair</option>
+                                <option value="inspection">Inspection</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="job-description">Description:</label>
+                    <div class="control">
+                        <textarea class="textarea" id="job-description" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="job-technician">Assign Technician:</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="job-technician">
+                                <option value="">Select Technician</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="job-date">Scheduled Date:</label>
+                    <div class="control">
+                        <input class="input" type="datetime-local" id="job-date" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="job-priority">Priority:</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="job-priority" required>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button type="button" class="button" onclick="closeModal('newJobModal')">Cancel</button>
+                    </div>
+                    <div class="control">
+                        <button type="submit" class="button is-primary">Create Job</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

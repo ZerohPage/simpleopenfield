@@ -1,0 +1,75 @@
+<div id="dashboard-page" class="content is-active"></div>
+    <div class="level mb-5">
+        <div class="level-left">
+            <h1 class="title is-3">Dashboard</h1>
+        </div>
+        <div class="level-right">
+            <div class="buttons">
+                <button class="button is-primary" onclick="openModal('newJobModal')">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>New Job</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="column">
+            <div class="box has-text-centered">
+                <div class="icon is-large has-text-primary">
+                    <i class="fas fa-2x fa-briefcase"></i>
+                </div>
+                <p class="title is-4" id="total-jobs">0</p>
+                <p class="subtitle is-6">Total Jobs</p>
+            </div>
+        </div>
+        <div class="column">
+            <div class="box has-text-centered">
+                <div class="icon is-large has-text-warning">
+                    <i class="fas fa-2x fa-clock"></i>
+                </div>
+                <p class="title is-4" id="pending-jobs">0</p>
+                <p class="subtitle is-6">Pending Jobs</p>
+            </div>
+        </div>
+        <div class="column">
+            <div class="box has-text-centered">
+                <div class="icon is-large has-text-success">
+                    <i class="fas fa-2x fa-check-circle"></i>
+                </div>
+                <p class="title is-4" id="completed-jobs">0</p>
+                <p class="subtitle is-6">Completed Jobs</p>
+            </div>
+        </div>
+        <div class="column">
+            <div class="box has-text-centered">
+                <div class="icon is-large has-text-info">
+                    <i class="fas fa-2x fa-users"></i>
+                </div>
+                <p class="title is-4" id="total-customers">0</p>
+                <p class="subtitle is-6">Total Customers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="column is-half">
+            <div class="box">
+                <h2 class="title is-5">Recent Jobs</h2>
+                <div id="recent-jobs" class="recent-items">
+                    <!-- Recent jobs will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        <div class="column is-half">
+            <div class="box">
+                <h2 class="title is-5">Today's Schedule</h2>
+                <div id="todays-schedule" class="schedule-items">
+                    <!-- Today's schedule will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

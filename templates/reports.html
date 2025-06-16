@@ -1,0 +1,44 @@
+<div id="reports-page" class="content is-hidden">
+    <div class="level mb-5">
+        <div class="level-left">
+            <h1 class="title is-3">Reports</h1>
+        </div>
+        <div class="level-right">
+            <div class="buttons">
+                <button class="button is-light" onclick="generateReport()">
+                    <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Generate PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns is-multiline">
+        <div class="column is-half">
+            <div class="box">
+                <h3 class="title is-5">Job Statistics</h3>
+                <canvas id="jobs-chart"></canvas>
+            </div>
+        </div>
+        <div class="column is-half">
+            <div class="box">
+                <h3 class="title is-5">Revenue Trends</h3>
+                <canvas id="revenue-chart"></canvas>
+            </div>
+        </div>
+        <div class="column is-half">
+            <div class="box">
+                <h3 class="title is-5">Technician Performance</h3>
+                <div id="technician-performance"></div>
+            </div>
+        </div>
+        <div class="column is-half">
+            <div class="box">
+                <h3 class="title is-5">Customer Satisfaction</h3>
+                <div id="customer-satisfaction"></div>
+            </div>
+        </div>
+    </div>
+</div>

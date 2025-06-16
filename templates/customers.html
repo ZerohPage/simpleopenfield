@@ -1,0 +1,53 @@
+<div id="customers-page" class="content is-hidden">
+    <div class="level mb-5">
+        <div class="level-left">
+            <h1 class="title is-3">Customer Management</h1>
+        </div>
+        <div class="level-right">
+            <div class="buttons">
+                <button class="button is-light" onclick="exportCustomers()">
+                    <span class="icon">
+                        <i class="fas fa-download"></i>
+                    </span>
+                    <span>Export</span>
+                </button>
+                <button class="button is-primary" onclick="openModal('newCustomerModal')">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>New Customer</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns mb-4">
+        <div class="column">
+            <div class="field">
+                <label class="label" for="customer-search">Search:</label>
+                <div class="control">
+                    <input class="input" type="text" id="customer-search" placeholder="Search customers..." oninput="searchCustomers()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable" id="customers-table">
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Total Jobs</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="customers-table-body">
+                <!-- Customers will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
