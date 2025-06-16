@@ -46,7 +46,6 @@ jobs:
           required_files=(
             "index.html"
             "README.md"
-            "styles/main.css"
             "styles/components.css"
             "styles/responsive.css"
             "js/app.js"
