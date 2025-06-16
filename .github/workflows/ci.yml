@@ -1,0 +1,264 @@
+name: CI Checks
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Validate HTML structure
+        run: |
+          echo "🔍 Validating HTML structure..."
+          
+          # Check for required HTML elements
+          if ! grep -q "<!DOCTYPE html>" index.html; then
+            echo "❌ Missing DOCTYPE declaration"
+            exit 1
+          fi
+          
+          if ! grep -q "<title>" index.html; then
+            echo "❌ Missing title tag"
+            exit 1
+          fi
+          
+          if ! grep -q 'name="viewport"' index.html; then
+            echo "❌ Missing viewport meta tag"
+            exit 1
+          fi
+          
+          if ! grep -q 'charset="UTF-8"' index.html; then
+            echo "❌ Missing charset declaration"
+            exit 1
+          fi
+          
+          echo "✅ HTML structure validation passed"
+          
+      - name: Validate CSS files
+        run: |
+          echo "🎨 Validating CSS files..."
+          
+          # Check if CSS files exist
+          required_css=(
+            "styles/main.css"
+            "styles/components.css"
+            "styles/responsive.css"
+          )
+          
+          for file in "${required_css[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing CSS file: $file"
+              exit 1
+            fi
+          done
+          
+          # Basic CSS syntax check
+          for file in styles/*.css; do
+            if ! grep -q ":root" "$file" && [ "$file" == "styles/main.css" ]; then
+              echo "❌ Missing CSS custom properties in main.css"
+              exit 1
+            fi
+          done
+          
+          echo "✅ CSS validation passed"
+          
+      - name: Validate JavaScript files
+        run: |
+          echo "⚡ Validating JavaScript files..."
+          
+          # Check if JS files exist
+          required_js=(
+            "js/app.js"
+            "js/data.js"
+            "js/ui.js"
+            "js/utils.js"
+          )
+          
+          for file in "${required_js[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing JavaScript file: $file"
+              exit 1
+            fi
+          done
+          
+          # Basic JS syntax check - look for class definitions
+          if ! grep -q "class.*App" js/app.js; then
+            echo "❌ Missing App class in app.js"
+            exit 1
+          fi
+          
+          if ! grep -q "class.*DataManager" js/data.js; then
+            echo "❌ Missing DataManager class in data.js"
+            exit 1
+          fi
+          
+          echo "✅ JavaScript validation passed"
+          
+      - name: Check project structure
+        run: |
+          echo "📁 Validating project structure..."
+          
+          # Check for required directories and files
+          required_structure=(
+            "index.html"
+            "README.md"
+            "styles/"
+            "js/"
+            ".gitignore"
+          )
+          
+          for item in "${required_structure[@]}"; do
+            if [ ! -e "$item" ]; then
+              echo "❌ Missing: $item"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Project structure validation passed"
+          
+      - name: Validate accessibility features
+        run: |
+          echo "♿ Validating accessibility features..."
+          
+          # Check for ARIA labels and roles
+          if ! grep -q 'aria-' index.html; then
+            echo "⚠️ Warning: No ARIA attributes found"
+          fi
+          
+          # Check for alt attributes (if images exist)
+          if grep -q '<img' index.html && ! grep -q 'alt=' index.html; then
+            echo "⚠️ Warning: Images without alt attributes"
+          fi
+          
+          # Check for semantic HTML
+          if ! grep -q '<nav' index.html; then
+            echo "❌ Missing semantic nav element"
+            exit 1
+          fi
+          
+          if ! grep -q '<main' index.html; then
+            echo "❌ Missing semantic main element"
+            exit 1
+          fi
+          
+          echo "✅ Accessibility validation passed"
+          
+      - name: Check responsive design
+        run: |
+          echo "📱 Validating responsive design..."
+          
+          # Check for media queries
+          if ! grep -q "@media" styles/responsive.css; then
+            echo "❌ Missing media queries in responsive.css"
+            exit 1
+          fi
+          
+          # Check for mobile-first approach
+          if ! grep -q "min-width" styles/responsive.css; then
+            echo "⚠️ Warning: Consider mobile-first approach with min-width queries"
+          fi
+          
+          echo "✅ Responsive design validation passed"
+          
+      - name: Performance checks
+        run: |
+          echo "⚡ Running performance checks..."
+          
+          # Check file sizes
+          html_size=$(wc -c < index.html)
+          if [ $html_size -gt 100000 ]; then
+            echo "⚠️ Warning: HTML file is large (${html_size} bytes)"
+          fi
+          
+          total_css_size=0
+          for file in styles/*.css; do
+            size=$(wc -c < "$file")
+            total_css_size=$((total_css_size + size))
+          done
+          
+          if [ $total_css_size -gt 50000 ]; then
+            echo "⚠️ Warning: Total CSS size is large (${total_css_size} bytes)"
+          fi
+          
+          total_js_size=0
+          for file in js/*.js; do
+            size=$(wc -c < "$file")
+            total_js_size=$((total_js_size + size))
+          done
+          
+          if [ $total_js_size -gt 100000 ]; then
+            echo "⚠️ Warning: Total JavaScript size is large (${total_js_size} bytes)"
+          fi
+          
+          echo "📊 File sizes:"
+          echo "  HTML: ${html_size} bytes"
+          echo "  CSS: ${total_css_size} bytes"
+          echo "  JS: ${total_js_size} bytes"
+          echo "✅ Performance checks completed"
+          
+      - name: Validate data models
+        run: |
+          echo "🗄️ Validating data models..."
+          
+          # Check for localStorage usage
+          if ! grep -q "localStorage" js/data.js; then
+            echo "❌ Missing localStorage implementation"
+            exit 1
+          fi
+          
+          # Check for CRUD operations
+          crud_operations=("create" "read" "update" "delete")
+          for operation in "${crud_operations[@]}"; do
+            if ! grep -q "$operation" js/data.js; then
+              echo "❌ Missing CRUD operation: $operation"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Data model validation passed"
+          
+      - name: Security checks
+        run: |
+          echo "🔒 Running security checks..."
+          
+          # Check for potential XSS vulnerabilities
+          if grep -q "innerHTML.*+" js/*.js; then
+            echo "⚠️ Warning: Potential XSS vulnerability with innerHTML concatenation"
+          fi
+          
+          # Check for eval usage
+          if grep -q "eval(" js/*.js; then
+            echo "❌ Security risk: eval() usage found"
+            exit 1
+          fi
+          
+          # Check for console.log in production files
+          console_logs=$(grep -c "console\.log" js/*.js || true)
+          if [ $console_logs -gt 10 ]; then
+            echo "⚠️ Warning: Many console.log statements found (${console_logs})"
+          fi
+          
+          echo "✅ Security checks completed"
+          
+      - name: Final validation summary
+        run: |
+          echo ""
+          echo "🎉 All validation checks completed successfully!"
+          echo ""
+          echo "✅ HTML structure valid"
+          echo "✅ CSS files valid"
+          echo "✅ JavaScript files valid" 
+          echo "✅ Project structure correct"
+          echo "✅ Accessibility features present"
+          echo "✅ Responsive design implemented"
+          echo "✅ Performance acceptable"
+          echo "✅ Data models valid"
+          echo "✅ Security checks passed"
+          echo ""
+          echo "🚀 Ready for deployment!"

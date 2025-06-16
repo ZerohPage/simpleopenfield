@@ -1,0 +1,256 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: false
+        type: string
+        default: 'New release of SimpleOpenField'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format. Use format: v1.0.0"
+            exit 1
+          fi
+          echo "✅ Version format is valid"
+          
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "${{ github.event.inputs.version }}" >/dev/null 2>&1; then
+            echo "❌ Tag ${{ github.event.inputs.version }} already exists"
+            exit 1
+          fi
+          echo "✅ Tag is available"
+          
+      - name: Run validation checks
+        run: |
+          echo "🔍 Running pre-release validation..."
+          
+          # Ensure all required files exist
+          required_files=(
+            "index.html"
+            "README.md"
+            "styles/main.css"
+            "styles/components.css"
+            "styles/responsive.css"
+            "js/app.js"
+            "js/data.js"
+            "js/ui.js"
+            "js/utils.js"
+          )
+          
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+          done
+          
+          echo "✅ All required files present"
+          
+      - name: Generate changelog
+        run: |
+          echo "📝 Generating changelog..."
+          
+          # Get commits since last tag
+          if git tag -l | head -1 > /dev/null 2>&1; then
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$LAST_TAG" ]; then
+              echo "## Changes since $LAST_TAG" > CHANGELOG.md
+              git log ${LAST_TAG}..HEAD --oneline --pretty=format:"- %s" >> CHANGELOG.md
+            else
+              echo "## Initial Release" > CHANGELOG.md
+              echo "- Complete SimpleOpenField application" >> CHANGELOG.md
+            fi
+          else
+            echo "## Initial Release" > CHANGELOG.md
+            echo "- Complete SimpleOpenField application" >> CHANGELOG.md
+          fi
+          
+          echo "" >> CHANGELOG.md
+          echo "### Features:" >> CHANGELOG.md
+          echo "- 📊 Dashboard with statistics and metrics" >> CHANGELOG.md
+          echo "- 🔧 Job Management (Create, Read, Update, Delete)" >> CHANGELOG.md
+          echo "- 👥 Customer Management" >> CHANGELOG.md
+          echo "- 🛠️ Technician Management" >> CHANGELOG.md
+          echo "- 📅 Schedule Calendar View" >> CHANGELOG.md
+          echo "- 📈 Reports and Analytics" >> CHANGELOG.md
+          echo "- 📱 Responsive Design" >> CHANGELOG.md
+          echo "- ♿ Accessibility Features" >> CHANGELOG.md
+          echo "- 💾 Local Storage Data Persistence" >> CHANGELOG.md
+          echo "- 📤 Data Export Capabilities" >> CHANGELOG.md
+          
+          echo "" >> CHANGELOG.md
+          echo "### Technical:" >> CHANGELOG.md
+          echo "- ⚡ Vanilla JavaScript (ES6+)" >> CHANGELOG.md
+          echo "- 🎨 Modern CSS with Custom Properties" >> CHANGELOG.md
+          echo "- 📦 Single Page Application (SPA)" >> CHANGELOG.md
+          echo "- 🔒 Security Best Practices" >> CHANGELOG.md
+          echo "- 🚀 GitHub Pages Ready" >> CHANGELOG.md
+          
+      - name: Create release package
+        run: |
+          echo "📦 Creating release package..."
+          
+          # Create release directory
+          mkdir -p release/simpleopenfield
+          
+          # Copy application files
+          cp index.html release/simpleopenfield/
+          cp -r styles release/simpleopenfield/
+          cp -r js release/simpleopenfield/
+          cp README.md release/simpleopenfield/
+          cp CHANGELOG.md release/simpleopenfield/
+          
+          # Create package info
+          cat > release/simpleopenfield/package.json << EOF
+          {
+            "name": "simpleopenfield",
+            "version": "${{ github.event.inputs.version }}",
+            "description": "Field Service Management Single Page Application",
+            "main": "index.html",
+            "repository": {
+              "type": "git",
+              "url": "https://github.com/ZerohPage/simpleopenfield.git"
+            },
+            "keywords": [
+              "field-service",
+              "management",
+              "spa",
+              "javascript",
+              "html",
+              "css"
+            ],
+            "author": "ZerohPage",
+            "license": "MIT",
+            "homepage": "https://zerohpage.github.io/simpleopenfield/"
+          }
+          EOF
+          
+          # Create installation instructions
+          cat > release/simpleopenfield/INSTALL.md << EOF
+          # Installation Instructions
+          
+          ## Quick Start
+          1. Download and extract the release package
+          2. Open \`index.html\` in a web browser
+          3. Or serve via HTTP server for full functionality
+          
+          ## HTTP Server Options
+          
+          ### Python
+          \`\`\`bash
+          python -m http.server 8000
+          \`\`\`
+          
+          ### Node.js
+          \`\`\`bash
+          npx serve .
+          \`\`\`
+          
+          ### VS Code
+          Use the Live Server extension
+          
+          ## Features
+          - Dashboard with real-time statistics
+          - Complete job management workflow
+          - Customer and technician databases
+          - Interactive calendar scheduling
+          - Data export capabilities
+          - Fully responsive design
+          
+          ## Browser Support
+          - Chrome 60+
+          - Firefox 55+
+          - Safari 12+
+          - Edge 79+
+          EOF
+          
+          # Create ZIP package
+          cd release
+          zip -r "simpleopenfield-${{ github.event.inputs.version }}.zip" simpleopenfield/
+          cd ..
+          
+          echo "✅ Release package created"
+          
+      - name: Create Git tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "${{ github.event.inputs.version }}" -m "Release ${{ github.event.inputs.version }}"
+          git push origin "${{ github.event.inputs.version }}"
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: SimpleOpenField ${{ github.event.inputs.version }}
+          body: |
+            ## SimpleOpenField ${{ github.event.inputs.version }}
+            
+            ${{ github.event.inputs.release_notes }}
+            
+            ### 🚀 Live Demo
+            **[Try it now: https://zerohpage.github.io/simpleopenfield/](https://zerohpage.github.io/simpleopenfield/)**
+            
+            ### 📦 What's Included
+            - Complete field service management application
+            - Dashboard with statistics and metrics
+            - Job, customer, and technician management
+            - Interactive calendar scheduling
+            - Reports and analytics
+            - Responsive design for all devices
+            - Accessibility features
+            - Data export capabilities
+            
+            ### 🛠️ Technical Details
+            - Pure vanilla JavaScript (no frameworks)
+            - Modern CSS with custom properties
+            - Single Page Application architecture
+            - Local storage for data persistence
+            - GitHub Pages compatible
+            
+            ### 📋 Installation
+            1. Download the release package below
+            2. Extract and open `index.html` in a web browser
+            3. For full functionality, serve via HTTP server
+            
+            ### 🔗 Quick Links
+            - [Live Demo](https://zerohpage.github.io/simpleopenfield/)
+            - [Documentation](https://github.com/ZerohPage/simpleopenfield#readme)
+            - [Installation Guide](INSTALL.md)
+            - [Release Notes](CHANGELOG.md)
+            
+            ---
+            
+            **Full Changelog**: [View Changes](https://github.com/ZerohPage/simpleopenfield/compare/HEAD...${{ github.event.inputs.version }})
+          files: |
+            release/simpleopenfield-${{ github.event.inputs.version }}.zip
+          draft: false
+          prerelease: false
+          
+      - name: Trigger deployment
+        run: |
+          echo "🚀 Release created successfully!"
+          echo "📦 Package: simpleopenfield-${{ github.event.inputs.version }}.zip"
+          echo "🏷️ Tag: ${{ github.event.inputs.version }}"
+          echo "🌐 Deployment will start automatically via the deploy workflow"
+          echo "📱 Live site will be available at: https://zerohpage.github.io/simpleopenfield/"
