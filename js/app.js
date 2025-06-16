@@ -25,17 +25,33 @@ class SimpleOpenFieldApp {
         
         // Load initial page
         this.showPage(this.currentPage);
-    }
-
-    setupEventListeners() {
-        // Navigation links
-        document.querySelectorAll('.nav-link').forEach(link => {
+    }    setupEventListeners() {        // Navigation links - Updated for Bulma navbar
+        document.querySelectorAll('.navbar-item[data-page]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = link.getAttribute('data-page');
                 this.navigateToPage(page);
+                
+                // Close mobile menu when clicking on a link
+                const navbarBurger = document.querySelector('.navbar-burger');
+                const navbarMenu = document.querySelector('.navbar-menu');
+                if (navbarBurger && navbarMenu) {
+                    navbarBurger.classList.remove('is-active');
+                    navbarMenu.classList.remove('is-active');
+                }
             });
         });
+
+        // Bulma navbar burger menu
+        const navbarBurger = document.querySelector('.navbar-burger');
+        const navbarMenu = document.querySelector('.navbar-menu');
+        
+        if (navbarBurger && navbarMenu) {
+            navbarBurger.addEventListener('click', () => {
+                navbarBurger.classList.toggle('is-active');
+                navbarMenu.classList.toggle('is-active');
+            });
+        }
 
         // Modal close events
         document.addEventListener('click', (e) => {
@@ -55,24 +71,10 @@ class SimpleOpenFieldApp {
         window.addEventListener('resize', () => {
             this.handleResize();
         });
-    }
-
-    setupMobileNav() {
-        const navToggle = document.getElementById('nav-toggle');
-        const navMenu = document.getElementById('nav-menu');
-
-        navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            navToggle.classList.toggle('active');
-        });
-
-        // Close mobile nav when clicking on a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                navToggle.classList.remove('active');
-            });
-        });
+    }    setupMobileNav() {
+        // Bulma navbar burger functionality is handled in setupEventListeners
+        // This method is kept for backward compatibility
+        console.log('Mobile navigation setup complete (using Bulma)');
     }
 
     setupForms() {
@@ -122,13 +124,11 @@ class SimpleOpenFieldApp {
         if (targetPage) {
             targetPage.classList.add('active');
         }
-    }
-
-    updateActiveNavLink() {
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
+    }    updateActiveNavLink() {
+        document.querySelectorAll('.navbar-item[data-page]').forEach(link => {
+            link.classList.remove('is-active');
             if (link.getAttribute('data-page') === this.currentPage) {
-                link.classList.add('active');
+                link.classList.add('is-active');
             }
         });
     }

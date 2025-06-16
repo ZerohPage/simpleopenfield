@@ -15,10 +15,19 @@ A modern, responsive single-page application for field service management built 
 ### Technical Features
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **Modern UI**: Clean, professional interface with smooth animations
+- **Bulma CSS Framework**: Uses Bulma for consistent, responsive styling
 - **Local Storage**: Data persistence using browser localStorage
 - **Accessibility**: WCAG compliant with keyboard navigation and screen reader support
 - **Progressive Enhancement**: Works without JavaScript for basic functionality
 - **Data Export**: Export jobs and customers to JSON format
+
+### CSS Framework
+This project uses **Bulma CSS Framework** (v1.0.4) for styling:
+- Modern CSS framework based on Flexbox
+- No JavaScript dependencies
+- Fully responsive design system
+- Consistent components and utilities
+- Local files stored in `styles/bulma.min.css` (no CDN dependencies)
 
 ## Project Structure
 
@@ -26,7 +35,9 @@ A modern, responsive single-page application for field service management built 
 simpleopenfield/
 ├── index.html              # Main HTML file
 ├── styles/
-│   ├── main.css            # Core styles and CSS variables
+│   ├── bulma.min.css       # Bulma CSS Framework (v1.0.4)
+│   ├── bulma.css           # Bulma CSS Framework (unminified)
+│   ├── main.css            # Custom styles and CSS variables
 │   ├── components.css      # Component-specific styles
 │   └── responsive.css      # Responsive design and accessibility
 ├── js/

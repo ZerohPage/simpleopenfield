@@ -156,6 +156,36 @@ class UIManager {
         this.dropdowns.clear();
     }
 
+    // Dropdown Management (Bulma Integration)
+    initializeDropdowns() {
+        // Initialize Bulma dropdowns
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            const trigger = dropdown.querySelector('.dropdown-trigger button');
+            const menu = dropdown.querySelector('.dropdown-menu');
+            
+            if (trigger && menu) {
+                trigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    dropdown.classList.toggle('is-active');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('is-active');
+                    }
+                });
+                
+                // Close dropdown when pressing escape
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        dropdown.classList.remove('is-active');
+                    }
+                });
+            }
+        });
+    }
+
     // Notification System
     showNotification(message, type = 'info', duration = 3000, actions = []) {
         const notification = {
